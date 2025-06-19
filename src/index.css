@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "ds-digital";
+  font-style: normal;
+  src: url("/src/fonts/DS-DIGIT.TTF");
+}
+
+@theme {
+  --font-ds-digital: "ds-digital", sans-serif;
+}
