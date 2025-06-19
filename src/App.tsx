@@ -48,9 +48,6 @@ export default React.memo(function App() {
     };
   }, [alarms, isPlaying, play]);
 
-  useEffect(() => {
-    console.log({ alarms });
-  }, [alarms]);
   return (
     <div className="w-screen h-screen flex justify-center items-center">
       <TimeContext value={time}>
