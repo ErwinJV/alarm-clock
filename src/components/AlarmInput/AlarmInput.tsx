@@ -7,7 +7,7 @@ import { Box } from "@mui/material";
 import type { PickerValue } from "@mui/x-date-pickers/internals";
 import Pad from "../Pad";
 import { padZero } from "../../helpers/pad-zero";
-import { AddAlarm, StopCircleSharp, StopSharp } from "@mui/icons-material";
+import { AddAlarm, StopCircleSharp } from "@mui/icons-material";
 
 interface AlarmInputProps {
   addAlarm: (inputTime: string) => void;
