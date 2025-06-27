@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { AlarmsContext } from "./context/alarms";
 import { TimeContext } from "./context/time-context";
 import AlarmClock from "./components/AlarmClock/AlarmClock";
@@ -9,6 +11,8 @@ import { activateAlarm } from "./helpers/activate-alarm";
 import { useSound } from "./hooks/activate-alarm";
 
 import sound from "./assets/TimeToMakeHistoryShihokoHirata.mp3";
+import Pad from "./components/Pad";
+import { Box, Paper } from "@mui/material";
 
 export default React.memo(function App() {
   const [time, setTime] = useState(new Date());
@@ -21,26 +25,39 @@ export default React.memo(function App() {
       alert("Empty input!!");
       return;
     }
-    const date = new Date(inputDate);
-
+    console.log({ inputDate });
     setAlarms((current) => ({
       ...current,
-      [date.toLocaleString()]: true,
+      [inputDate]: true,
     }));
   };
 
+  const deleteAlarm = useCallback(
+    (inputDate: string) => {
+      const _alarms: Alarms = {};
+      for (const alarm in alarms) {
+        if (alarm !== inputDate) {
+          _alarms[alarm] = alarms[alarm];
+        }
+      }
+
+      setAlarms(_alarms);
+    },
+    [alarms]
+  );
+
   useEffect(() => {
     const interval = setInterval(() => {
-      if (alarms[new Date().toLocaleString()]) {
+      const date = new Date().toLocaleString().split(",")[1].trimStart();
+
+      if (alarms[date]) {
         activateAlarm();
         play();
       }
 
-      if (isPlaying) {
-        return;
+      if (!isPlaying) {
+        setTime(new Date());
       }
-
-      setTime(new Date());
     }, 1000);
 
     return () => {
@@ -48,24 +65,39 @@ export default React.memo(function App() {
     };
   }, [alarms, isPlaying, play]);
 
+  useEffect(() => {
+    if (Object.keys(alarms).length) {
+      window.localStorage.setItem("ALARMS", JSON.stringify(alarms));
+    }
+  }, [alarms]);
+
+  useEffect(() => {
+    const data = window.localStorage.getItem("ALARMS") || "{}";
+
+    setAlarms(JSON.parse(data));
+  }, []);
+
   return (
-    <div className="w-screen h-screen flex justify-center items-center">
-      <TimeContext value={time}>
-        <AlarmsContext value={alarms}>
-          <div className="inline-block ">
-            <AlarmClock />
-            <AlarmInput addAlarm={addAlarm} />
-            {isPlaying ? (
-              <button onClick={() => stop()} className="p-4">
-                Stop Alarm
-              </button>
-            ) : (
-              <></>
-            )}
-            <ListAlarm />
-          </div>
-        </AlarmsContext>
-      </TimeContext>
+    <div className="w-screen h-screen flex justify-center items-center bg-[url(./assets/clock-square-svgrepo-com.svg)] bg-size-[10px]">
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <TimeContext value={time}>
+          <AlarmsContext value={alarms}>
+            <Box
+              component={Paper}
+              elevation={10}
+              className="flex flex-col  items-center justify-center p-3 "
+            >
+              <div className="flex flex-col md:flex-row">
+                <AlarmClock />
+                <Pad amt={30} row />
+                <AlarmInput addAlarm={addAlarm} stopAlarm={stop} />
+              </div>
+              <Pad amt={30} />
+              <ListAlarm deleteAlarm={deleteAlarm} />
+            </Box>
+          </AlarmsContext>
+        </TimeContext>
+      </LocalizationProvider>
     </div>
   );
 });

@@ -1,23 +1,30 @@
-import React, { useContext } from "react";
+import React, { Fragment, useCallback, useContext } from "react";
 import { AlarmsContext } from "../../context/alarms";
+import Pad from "../Pad";
+import { Box, Paper } from "@mui/material";
+import { DeleteRounded } from "@mui/icons-material";
 
-export default React.memo(function ListAlarm() {
+interface ListAlarmProps {
+  deleteAlarm: (inputDate: string) => void;
+}
+
+export default React.memo<ListAlarmProps>(function ListAlarm({ deleteAlarm }) {
   const alarms = useContext(AlarmsContext);
   const alarmKeys = Object.keys(alarms);
   return (
     <>
-      <h2 className="text-center font-ds-digital text-3xl">Alarms Saved</h2>
       <>
         {alarmKeys.length ? (
-          <ul className="font-ds-digital w-full bg-gray-300 p-2 ">
-            <>
-              {alarmKeys.map((key) => (
-                <li className="text-2xl" key={key}>
-                  {key}
-                </li>
-              ))}
-            </>
-          </ul>
+          <>
+            <Box className=" w-[320px]  p-3 h-[260px] overflow-y-auto  flex flex-col justify-center rounded ">
+              <>
+                {alarmKeys.map((alarm) => (
+                  <Alarm alarm={alarm} key={alarm} deleteAlarm={deleteAlarm} />
+                ))}
+              </>
+            </Box>
+            <Pad amt={30} />
+          </>
         ) : (
           <></>
         )}
@@ -25,3 +32,32 @@ export default React.memo(function ListAlarm() {
     </>
   );
 });
+
+const Alarm = ({
+  alarm,
+  deleteAlarm,
+}: {
+  alarm: string;
+  deleteAlarm: (alarm: string) => void;
+}) => {
+  const handleAlarm = useCallback(() => {
+    deleteAlarm(alarm);
+  }, [alarm, deleteAlarm]);
+  return (
+    <Fragment>
+      <Box
+        component={Paper}
+        elevation={6}
+        className="text-xl p-1 flex justify-between"
+      >
+        <span> {alarm}</span>
+        <DeleteRounded
+          onClick={handleAlarm}
+          className="cursor-pointer"
+          color="error"
+        />
+      </Box>
+      <Pad amt={20} />
+    </Fragment>
+  );
+};
