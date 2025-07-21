@@ -16,6 +16,9 @@ import spanishGuitarCover from "./assets/songs/spanish-guitar/spanish-guitar.jpg
 import SelectSong from "./components/SelectSong";
 import type { Song } from "./types/song";
 import { Button } from "@mui/material";
+import Pad from "./components/Pad";
+import { IoLogoGithub } from "react-icons/io5";
+import { IoLogoLinkedin } from "react-icons/io";
 
 const songs: Song[] = [
   {
@@ -74,11 +77,18 @@ export default React.memo(function App() {
   }, [currentSong, isPlaying, isSettled]);
 
   const toggleSettled = useCallback(() => {
+    if (isPlaying) {
+      return;
+    }
     setIsSettled((current) => !current);
-  }, []);
+  }, [isPlaying]);
 
   return (
-    <div className="w-screen h-screen flex justify-center items-center bg-[url(./assets/backgrounds/dawn.jpg)] bg-cover">
+    <div className="w-screen h-screen flex justify-center items-center bg-[url(./assets/backgrounds/dawn.jpg)] bg-cover  flex-col">
+      <h1 className="text-4xl font-bold text-center text-white p-2 rounded-xl bg-[#d32f2f]">
+        Alarm Clock by Erwin Jimenez
+      </h1>
+      <Pad amt={40} />
       <div className="w-full flex flex-col items-center md:flex-row md:justify-around">
         <div className="flex flex-col items-center my-4 md:my-0 ">
           <AlarmClock play={play} isSettled={isSettled} />
@@ -90,7 +100,7 @@ export default React.memo(function App() {
           <Button
             className="uppercase font-bold text-2xl "
             onClick={toggleSettled}
-            color="error"
+            color={isPlaying ? "inherit" : "error"}
             variant="contained"
           >
             {isSettled ? "Cancel" : "Set Alarm"}
@@ -98,7 +108,7 @@ export default React.memo(function App() {
         </div>
 
         <div className="flex flex-col items-center my-4 md:my-0 ">
-          <h4 className="text-xl font-bold">Select Song</h4>
+          <h4 className="text-2xl font-bold">Select Song</h4>
           <SelectSong
             coverPath={songs[currentSong].coverPath}
             selectNextSong={selectNextSong}
@@ -108,12 +118,32 @@ export default React.memo(function App() {
           <Button
             className="uppercase font-bold text-2xl "
             onClick={toggleSong}
-            color="error"
+            color={isSettled ? "inherit" : "error"}
             variant="contained"
           >
-            {isPlaying ? "stop" : "play"}
+            {isPlaying ? "stop" : "try"}
           </Button>
         </div>
+      </div>
+      <Pad amt={100} />
+      <div className="flex">
+        <a
+          className="bg-white rounded-full"
+          href="https://github.com/ErwinJV"
+          target="_blank"
+          rel="noopener noreferrer "
+        >
+          <IoLogoGithub size={34} />
+        </a>
+        <Pad amt={30} row />
+        <a
+          className="bg-white"
+          href="https://www.linkedin.com/in/erwin-jimenez"
+          target="_blank"
+          rel="noopener noreferrer "
+        >
+          <IoLogoLinkedin size={34} />
+        </a>
       </div>
     </div>
   );
