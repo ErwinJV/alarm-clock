@@ -22,6 +22,11 @@ import { IoLogoLinkedin } from "react-icons/io";
 
 const songs: Song[] = [
   {
+    coverPath: spanishGuitarCover,
+    soundPath: spanishGuitarSong,
+    title: "Spanish Guitar",
+  },
+  {
     coverPath: p4GImage,
     soundPath: timeToMakeHistory,
     title: "Time to make history",
@@ -30,11 +35,6 @@ const songs: Song[] = [
     coverPath: sirAlonneCover,
     soundPath: sirAlonneSong,
     title: "Sir Alonne",
-  },
-  {
-    coverPath: spanishGuitarCover,
-    soundPath: spanishGuitarSong,
-    title: "Spanish Guitar",
   },
 ];
 
