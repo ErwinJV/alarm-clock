@@ -1,103 +1,150 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { AlarmsContext } from "./context/alarms";
-import { TimeContext } from "./context/time-context";
+import React, { useCallback, useState } from "react";
+
 import AlarmClock from "./components/AlarmClock/AlarmClock";
-import AlarmInput from "./components/AlarmInput/AlarmInput";
-import type { Alarms } from "./types/alarm";
-import ListAlarm from "./components/ListAlarm";
-import { activateAlarm } from "./helpers/activate-alarm";
+
 import { useSound } from "./hooks/activate-alarm";
 
-import sound from "./assets/TimeToMakeHistoryShihokoHirata.mp3";
+import timeToMakeHistory from "./assets/songs/time-to-make-history/TimeToMakeHistoryShihokoHirata.mp3";
+import p4GImage from "./assets/songs/time-to-make-history/p4GT.jpg";
+
+import sirAlonneSong from "./assets/songs/sir-alonne/sir-alonne.mp3";
+import sirAlonneCover from "./assets/songs/sir-alonne/sir-alonne .jpg";
+
+import spanishGuitarSong from "./assets/songs/spanish-guitar/spanish-guitar.mp3";
+import spanishGuitarCover from "./assets/songs/spanish-guitar/spanish-guitar.jpg";
+
+import SelectSong from "./components/SelectSong";
+import type { Song } from "./types/song";
+import { Button } from "@mui/material";
 import Pad from "./components/Pad";
-import { Box, Paper } from "@mui/material";
+import { IoLogoGithub } from "react-icons/io5";
+import { IoLogoLinkedin } from "react-icons/io";
+
+const songs: Song[] = [
+  {
+    coverPath: p4GImage,
+    soundPath: timeToMakeHistory,
+    title: "Time to make history",
+  },
+  {
+    coverPath: sirAlonneCover,
+    soundPath: sirAlonneSong,
+    title: "Sir Alonne",
+  },
+  {
+    coverPath: spanishGuitarCover,
+    soundPath: spanishGuitarSong,
+    title: "Spanish Guitar",
+  },
+];
 
 export default React.memo(function App() {
-  const [time, setTime] = useState(new Date());
-  const [alarms, setAlarms] = useState<Alarms>({});
+  const [currentSong, setCurrentSong] = useState<number>(0);
+  const [isSettled, setIsSettled] = useState<boolean>(false);
 
-  const { isPlaying, play, stop } = useSound(sound);
+  const { isPlaying, play, stop } = useSound(songs[currentSong].soundPath);
 
-  const addAlarm = (inputDate: string) => {
-    if (!inputDate) {
-      alert("Empty input!!");
+  const toggleSong = useCallback(() => {
+    if (isPlaying) {
+      stop();
+    } else {
+      play();
+    }
+  }, [isPlaying, play, stop]);
+
+  const selectNextSong = useCallback(() => {
+    if (isSettled) return;
+    if (isPlaying) return;
+
+    if (currentSong + 1 > songs.length - 1) {
+      setCurrentSong(0);
       return;
     }
-    console.log({ inputDate });
-    setAlarms((current) => ({
-      ...current,
-      [inputDate]: true,
-    }));
-  };
 
-  const deleteAlarm = useCallback(
-    (inputDate: string) => {
-      const _alarms: Alarms = {};
-      for (const alarm in alarms) {
-        if (alarm !== inputDate) {
-          _alarms[alarm] = alarms[alarm];
-        }
-      }
+    setCurrentSong((current) => current + 1);
+  }, [currentSong, isPlaying, isSettled]);
 
-      setAlarms(_alarms);
-    },
-    [alarms]
-  );
+  const selectPreviousSong = useCallback(() => {
+    if (isSettled) return;
+    if (isPlaying) return;
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const date = new Date().toLocaleString().split(",")[1].trimStart();
-
-      if (alarms[date]) {
-        activateAlarm();
-        play();
-      }
-
-      if (!isPlaying) {
-        setTime(new Date());
-      }
-    }, 1000);
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, [alarms, isPlaying, play]);
-
-  useEffect(() => {
-    if (Object.keys(alarms).length) {
-      window.localStorage.setItem("ALARMS", JSON.stringify(alarms));
+    if (currentSong - 1 < 0) {
+      setCurrentSong(songs.length - 1);
+      return;
     }
-  }, [alarms]);
 
-  useEffect(() => {
-    const data = window.localStorage.getItem("ALARMS") || "{}";
+    setCurrentSong((current) => current - 1);
+  }, [currentSong, isPlaying, isSettled]);
 
-    setAlarms(JSON.parse(data));
-  }, []);
+  const toggleSettled = useCallback(() => {
+    if (isPlaying) {
+      return;
+    }
+    setIsSettled((current) => !current);
+  }, [isPlaying]);
 
   return (
-    <div className="w-screen h-screen flex justify-center items-center bg-[url(./assets/clock-square-svgrepo-com.svg)] bg-size-[10px]">
-      <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <TimeContext value={time}>
-          <AlarmsContext value={alarms}>
-            <Box
-              component={Paper}
-              elevation={10}
-              className="flex flex-col  items-center justify-center p-3 "
-            >
-              <div className="flex flex-col md:flex-row">
-                <AlarmClock />
-                <Pad amt={30} row />
-                <AlarmInput addAlarm={addAlarm} stopAlarm={stop} />
-              </div>
-              <Pad amt={30} />
-              <ListAlarm deleteAlarm={deleteAlarm} />
-            </Box>
-          </AlarmsContext>
-        </TimeContext>
-      </LocalizationProvider>
+    <div className="w-screen h-screen flex justify-center items-center bg-[url(./assets/backgrounds/dawn.jpg)] bg-cover  flex-col">
+      <h1 className="text-4xl font-bold text-center text-white p-2 rounded-xl bg-[#d32f2f]">
+        Alarm Clock by Erwin Jimenez
+      </h1>
+      <Pad amt={40} />
+      <div className="w-full flex flex-col items-center md:flex-row md:justify-around">
+        <div className="flex flex-col items-center my-4 md:my-0 ">
+          <AlarmClock play={play} isSettled={isSettled} />
+          {isSettled ? (
+            <span className="text-xl text-white my-1">Alarm is set!</span>
+          ) : (
+            <div className="h-[28px]"></div>
+          )}
+          <Button
+            className="uppercase font-bold text-2xl "
+            onClick={toggleSettled}
+            color={isPlaying ? "inherit" : "error"}
+            variant="contained"
+          >
+            {isSettled ? "Cancel" : "Set Alarm"}
+          </Button>
+        </div>
+
+        <div className="flex flex-col items-center my-4 md:my-0 ">
+          <h4 className="text-2xl font-bold">Select Song</h4>
+          <SelectSong
+            coverPath={songs[currentSong].coverPath}
+            selectNextSong={selectNextSong}
+            selectPreviousSong={selectPreviousSong}
+            title={songs[currentSong].title}
+          />
+          <Button
+            className="uppercase font-bold text-2xl "
+            onClick={toggleSong}
+            color={isSettled ? "inherit" : "error"}
+            variant="contained"
+          >
+            {isPlaying ? "stop" : "try"}
+          </Button>
+        </div>
+      </div>
+      <Pad amt={100} />
+      <div className="flex">
+        <a
+          className="bg-white rounded-full"
+          href="https://github.com/ErwinJV"
+          target="_blank"
+          rel="noopener noreferrer "
+        >
+          <IoLogoGithub size={34} />
+        </a>
+        <Pad amt={30} row />
+        <a
+          className="bg-white"
+          href="https://www.linkedin.com/in/erwin-jimenez"
+          target="_blank"
+          rel="noopener noreferrer "
+        >
+          <IoLogoLinkedin size={34} />
+        </a>
+      </div>
     </div>
   );
 });
