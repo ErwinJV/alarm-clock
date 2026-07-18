@@ -25,7 +25,7 @@ export default function SelectSong({
   return (
     <div className="flex justify-center items-center p-2 bg-transparent rounded">
       <button
-        className="p-1 rounded-full bg-gray-500 cursor-pointer"
+        className="p-1 rounded-full bg-gray-500 cursor-pointer  hover:bg-red-500 active:bg-red-500 "
         onClick={handlePreviousSong}
       >
         <IoArrowBack className="text-2xl text-white" />
@@ -39,7 +39,7 @@ export default function SelectSong({
       </span>
       <Pad amt={5} row />
       <button
-        className="p-1 rounded-full bg-gray-500 cursor-pointer"
+        className="p-1 rounded-full bg-gray-500 hover:bg-red-500 active:bg-red-500 cursor-pointer"
         onClick={handleNextSong}
       >
         <IoArrowForward className="text-2xl text-white" />

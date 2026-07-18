@@ -1,108 +1,57 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useRef } from "react";
 
-import { padZero } from "../../helpers/pad-zero";
+// import { padZero } from "../../helpers/pad-zero";
 import Pad from "../Pad";
 import { IoAdd, IoRemove } from "react-icons/io5";
-import { RadioGroup, FormControlLabel, Radio } from "@mui/material";
+import type { AlarmTime } from "../../types/alarm";
+// import { RadioGroup, FormControlLabel, Radio } from "@mui/material";
 
 interface AlarmClockProps {
-  play: () => void;
-  isSettled: boolean;
+  scheduleAlarm: (hours: number, minutes: number) => void;
+  alarmTime: AlarmTime | null;
 }
 
 export default React.memo<AlarmClockProps>(function AlarmClock({
-  play,
-  isSettled,
+  alarmTime,
+
+  scheduleAlarm,
 }) {
-  const [hour, setHour] = useState<string>("00");
-  const [minutes, setMinutes] = useState<string>("00");
-  const [meridiem, setMeridiem] = useState<"AM" | "PM">("AM");
   const currentTimeRef = useRef<HTMLSpanElement>(
-    document.createElement("span")
+    document.createElement("span"),
   );
 
-  const minHour = useCallback(() => {
-    if (isSettled) return;
-    const numHour = parseInt(hour);
-
-    const res = numHour - 1;
-    if (res < 1) return;
-    setHour(padZero(res));
-  }, [hour, isSettled]);
+  const { hours, minutes } = alarmTime || { hours: 0, minutes: 0 };
 
   const maxHour = useCallback(() => {
-    if (isSettled) return;
-    const numHour = parseInt(hour);
-    const res = numHour + 1;
-    if (res > 12) return;
-    setHour(padZero(res));
-  }, [hour, isSettled]);
+    if (hours >= 23) return;
+    scheduleAlarm(hours + 1, minutes);
+  }, [hours, minutes, scheduleAlarm]);
 
-  const minMinute = useCallback(() => {
-    if (isSettled) return;
-    const numMinutes = parseInt(minutes);
-
-    const res = numMinutes - 1;
-    if (res < 1) return;
-    setMinutes(padZero(res));
-  }, [isSettled, minutes]);
+  const minHour = useCallback(() => {
+    if (hours <= 0) return;
+    scheduleAlarm(hours - 1, minutes);
+  }, [hours, minutes, scheduleAlarm]);
 
   const maxMinute = useCallback(() => {
-    if (isSettled) return;
-    const numMinutes = parseInt(minutes);
-    const res = numMinutes + 1;
-    if (res > 59) return;
-    setMinutes(padZero(res));
-  }, [isSettled, minutes]);
+    if (minutes >= 59) return;
+    scheduleAlarm(hours, minutes + 1);
+  }, [hours, minutes, scheduleAlarm]);
 
-  const setMeridiemToAM = useCallback(() => {
-    if (isSettled) return;
-    setMeridiem("AM");
-  }, [isSettled]);
-
-  const setMeridiemToPM = useCallback(() => {
-    if (isSettled) return;
-    setMeridiem("PM");
-  }, [isSettled]);
-
-  // function formatTime() {
-  //   let hours = time?.getHours();
-  //   const minutes = time.getMinutes();
-  //   const seconds = time.getSeconds();
-  //   const meridiem = hours >= 12 ? "PM" : "AM";
-
-  //   hours = hours % 12 || 12;
-
-  //   return `${padZero(
-  //     hours
-  //   )}:${padZero(minutes)}:${padZero(seconds)} ${meridiem}`;
-  // }
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const date = new Date().toLocaleString().split(",")[1].trimStart();
-      currentTimeRef.current.innerHTML = `Current time: ${date}`;
-      if (date === `${hour}:${minutes}:00 ${meridiem}`) {
-        play();
-      }
-      console.log({ date, alarm: `${hour}:${minutes}:00 ${meridiem}` });
-    }, 1000);
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, [hour, meridiem, minutes, play]);
+  const minMinute = useCallback(() => {
+    if (minutes <= 0) return;
+    scheduleAlarm(hours, minutes - 1);
+  }, [hours, minutes, scheduleAlarm]);
 
   return (
-    <div className="bg-black p-6 flex flex-col rounded-2xl ">
+    <div className="bg-black p-6 flex flex-col rounded-2xl scale-120 ">
       <div className="text-white flex justify-between ">
         <Pad amt={20} row />{" "}
         <span ref={currentTimeRef} className="text-xs font-bold p-1">
           {/* Current time is: {formatTime()} */}
         </span>
       </div>
-      <div className="bg-[#748079]  flex justify-between items-center p-2">
-        <span className="font-ds-digital  text-7xl text-center  ">{hour}</span>
+      <div className="bg-[#748079]  flex justify-center items-center  w-42">
+        <span className="font-ds-digital  text-7xl text-center  ">{hours}</span>
         <span className="font-ds-digital  text-7xl text-center  ">:</span>
         <span className="font-ds-digital  text-7xl text-center  ">
           {minutes}
@@ -146,7 +95,7 @@ export default React.memo<AlarmClockProps>(function AlarmClock({
             </button>
           </div>
         </div>
-        <Pad amt={20} />
+        {/* <Pad amt={20} />
         <RadioGroup
           aria-labelledby="radio-meridiem"
           defaultValue={meridiem}
@@ -167,7 +116,7 @@ export default React.memo<AlarmClockProps>(function AlarmClock({
             onClick={setMeridiemToPM}
             value="PM"
           />
-        </RadioGroup>
+        </RadioGroup> */}
       </div>
     </div>
   );
